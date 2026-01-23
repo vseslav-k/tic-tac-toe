@@ -1,4 +1,5 @@
 #include "TicTacToe.h"
+#include "C:\Libraries\imgui\logger\logger.h"
 
 // -----------------------------------------------------------------------------
 // TicTacToe.cpp
@@ -29,6 +30,8 @@ const int HUMAN_PLAYER= 0;      // index of the human player (X)
 
 TicTacToe::TicTacToe()
 {
+    log(Info, "TicTacToe game initialized");
+    _aiEnabled = true;
 }
 
 TicTacToe::~TicTacToe()
@@ -58,6 +61,20 @@ void TicTacToe::setUpBoard()
     // then we need to setup our 3x3 array in _grid with the correct position of the square, and load the "square.png" sprite for each square
     // we will use the initHolder function on each square to do this
     // finally we should call startGame to get everything going
+
+    setNumberOfPlayers(2);
+    if(_aiEnabled){
+        _players[1]->setAIPlayer(true);
+        setAIPlayer(1);
+    }
+
+    _gameOptions.rowX = 3;
+    _gameOptions.rowY = 3;
+    for(int y=0; y<3; y++)
+        for(int x=0; x<3; x++)
+            _grid[y][x].initHolder(ImVec2(50 + x * 100,  50 + y * 100), "square.png", x, y);
+
+    startGame();
 }
 
 //
@@ -185,6 +202,7 @@ bool TicTacToe::checkForDraw()
             if(_grid[y][x].empty())
                 return false;
 
+
     return true;
 }
 
@@ -255,6 +273,28 @@ void TicTacToe::setStateString(const std::string &s)
     // loop through the 3x3 array and set each square accordingly
     // the string should always be valid, so you don't need to check its length or contents
     // but you can assume it will always be 9 characters long and only contain '0', '1', or '2'
+
+
+    setUpBoard();
+
+    for(int i = 0; i < 9; i++)
+    {
+        switch(s[i]){
+            case '0':
+                _grid[i/3][i%3].destroyBit();
+                break;
+            case '1':
+                _grid[i/3][i%3].setBit(PieceForPlayer(0));
+                _grid[i/3][i%3].bit()->moveTo( _grid[i/3][i%3].getPosition());
+                break;
+            case '2':
+                _grid[i/3][i%3].setBit(PieceForPlayer(1));
+                _grid[i/3][i%3].bit()->moveTo( _grid[i/3][i%3].getPosition());
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 
@@ -263,6 +303,24 @@ void TicTacToe::setStateString(const std::string &s)
 //
 void TicTacToe::updateAI() 
 {
+    Square *bestMove = nullptr;
+
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            if(_grid[i][j].empty()) {
+                bestMove = &_grid[i][j];
+                break;
+            }
+        }
+        if(bestMove != nullptr) {
+            break;
+        }
+    }
+
+    if(bestMove != nullptr) {
+        actionForEmptyHolder(bestMove);
+    }
+    endTurn();
     // we will implement the AI in the next assignment!
 }
 

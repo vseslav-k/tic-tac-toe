@@ -46,6 +46,11 @@ namespace ClassGame {
                         gameOver = false;
                         gameWinner = -1;
                     }
+                    ImGui::SameLine();
+                    if (ImGui::Button(game->_aiEnabled ? "AI On" : "AI Off")) {
+                        game->_aiEnabled = !game->_aiEnabled;
+                    }
+
                 }
                 ImGui::End();
 

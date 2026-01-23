@@ -12,6 +12,9 @@
 #include <d3d11.h>
 #include <tchar.h>
 #include "Application.h"
+#include "C:\Libraries\imgui\logger\logger.h"
+#include "C:\Libraries\imgui\logger\logger.tpp"
+#include "C:\Libraries\imgui\Timer\Timer.h"
 
 // Data
 ID3D11Device*            g_pd3dDevice = nullptr;
@@ -147,7 +150,7 @@ int main(int, char**)
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
         ClassGame::RenderGame();
-
+        DrawLogWindow();
         // Rendering
         ImGui::Render();
         const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };

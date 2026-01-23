@@ -7,6 +7,11 @@ Bit::~Bit()
 {
 }
 
+void Bit::moveTo(const ImVec2 &point)
+{
+	setPosition(point);
+}
+
 BitHolder* Bit::getHolder()
 {
 	// Look for my nearest ancestor that's a BitHolder:
