@@ -1,4 +1,4 @@
-// Dear ImGui: standalone example application for DirectX 11
+// Dear ImGui: standalone example application for DirectX 11s
 
 // Learn about Dear ImGui:
 // - FAQ                  https://dearimgui.com/faq
@@ -12,9 +12,9 @@
 #include <d3d11.h>
 #include <tchar.h>
 #include "Application.h"
-#include "C:\Libraries\imgui\logger\logger.h"
-#include "C:\Libraries\imgui\logger\logger.tpp"
+
 #include "C:\Libraries\imgui\Timer\Timer.h"
+#include "C:\Libraries\imgui\logger\logger.h"
 
 // Data
 ID3D11Device*            g_pd3dDevice = nullptr;

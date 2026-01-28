@@ -35,6 +35,7 @@ public:
 private:
     Bit *       PieceForPlayer(const int playerNumber);
     Player*     ownerAt(int index ) const;
+    int         negamax(int depth, int playerIdx);
     Square      _grid[3][3];
 };
 

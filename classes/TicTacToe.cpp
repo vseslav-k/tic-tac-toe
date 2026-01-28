@@ -1,6 +1,6 @@
 #include "TicTacToe.h"
+#include <algorithm>
 #include "C:\Libraries\imgui\logger\logger.h"
-
 // -----------------------------------------------------------------------------
 // TicTacToe.cpp
 // -----------------------------------------------------------------------------
@@ -46,7 +46,7 @@ Bit* TicTacToe::PieceForPlayer(const int playerNumber)
 {
     // depending on playerNumber load the "x.png" or the "o.png" graphic
     Bit *bit = new Bit();
-    bit->LoadTextureFromFile(playerNumber == 1 ? "x.png" : "o.png");
+    bit->LoadTextureFromFile(playerNumber == 0 ? "x.png" : "o.png");
     bit->setOwner(getPlayerAt(playerNumber));
     return bit;
 }
@@ -304,16 +304,18 @@ void TicTacToe::setStateString(const std::string &s)
 void TicTacToe::updateAI() 
 {
     Square *bestMove = nullptr;
-
+    int bestMoveScore = !AI_PLAYER;
+    int moveScore = !AI_PLAYER;
     for(int i = 0; i < 3; i++) {
         for(int j = 0; j < 3; j++) {
-            if(_grid[i][j].empty()) {
-                bestMove = &_grid[i][j];
-                break;
+            _grid[i][j].setBit(PieceForPlayer(AI_PLAYER));
+            moveScore = negamax(0, AI_PLAYER);
+            _grid[i][j].setBit(nullptr);
+
+            if(abs(moveScore) >= abs(bestMoveScore)){
+                bestMoveScore = moveScore;
+                bestMove = &(_grid[i][j]);
             }
-        }
-        if(bestMove != nullptr) {
-            break;
         }
     }
 
@@ -322,5 +324,53 @@ void TicTacToe::updateAI()
     }
     endTurn();
     // we will implement the AI in the next assignment!
+
 }
 
+int TicTacToe::negamax(int d, int player)
+{
+    log(Debug, numToStr(d)+ " depth");
+    if(checkForDraw()) 
+        return 0;
+    
+    Player * winner = checkForWinner();
+    if(winner != nullptr)
+        return (winner->playerNumber() == 0)? -1 : 1;
+    
+    if(player == 0){
+        int bestMove = 99999;
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                if(!_grid[i][j].empty()) continue;
+
+                _grid[i][j].setBit(PieceForPlayer(player));
+                bestMove = min(bestMove, negamax( d+1, !player)) ;
+                _grid[i][j].setBit(nullptr);
+
+            }
+        }
+        return bestMove; 
+    }
+
+    if(player == 1){
+        int bestMove = -99999;
+        for(int i = 0; i < 3; i++) {
+            for(int j = 0; j < 3; j++) {
+                if(!_grid[i][j].empty()) continue;
+
+                _grid[i][j].setBit(PieceForPlayer(player));
+                bestMove = max(bestMove, negamax(d+1, !player)) ;
+                _grid[i][j].setBit(nullptr);
+
+            }
+        }
+        return bestMove; 
+    }
+
+    return 0;
+}
+
+/*
+holder->setBit(PieceForPlayer(getCurrentPlayer()->playerNumber()));
+    holder->bit()->moveTo(holder->getPosition());
+*/
