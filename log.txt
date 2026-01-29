@@ -1,0 +1,2 @@
+[INFO] Test Log Message
+[INFO] Test Log Message
