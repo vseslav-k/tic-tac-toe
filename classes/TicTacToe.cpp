@@ -302,6 +302,33 @@ void TicTacToe::setStateString(const std::string &s)
     }
 }
 
+int AICheckWin(const std::string& s){
+    static int winningCombos[8][3] = {
+        {0,1,2}, {3,4,5}, {6,7,8}, // rows
+        {0,3,6}, {1,4,7}, {2,5,8}, // columns
+        {0,4,8}, {2,4,6}           // diagonals
+    };
+
+    for(const int* combo : winningCombos ) {
+        if(s[combo[0]] == s[combo[1]] && s[combo[1]] == s[combo[2]]){
+            if(s[combo[0]] == '0') continue;
+            
+            return s[combo[0]] - 1 - '0';
+        }
+    }
+        
+    return -1;
+}
+
+
+bool AICheckDraw(const std::string& s){
+    for(const char &c: s)
+        if(c == '0')
+            return false;
+    
+    return true;
+}
+
 
 //
 // this is the function that will be called by the AI
@@ -309,70 +336,63 @@ void TicTacToe::setStateString(const std::string &s)
 void TicTacToe::updateAI() 
 {
 
-    Square *bestMove = nullptr;
+    int bestMove = -1;
     int bestMoveScore = -9999;
     int moveScore = -999;
-    for(int i = 0; i < 3; i++) {
-        for(int j = 0; j < 3; j++) {
-            if(!_grid[i][j].empty()) continue;
 
-            _grid[i][j].setBit(PieceForPlayer(AI_PLAYER));
+    std::string board = stateString(); 
+    for(int i = 0; i < 9; ++i){
+        if(board[i] != '0') continue;
+        
+        board[i] = '0'+AI_PLAYER+1;
+        timer.setPt("nega start");
+        moveScore = -negamax(board, !AI_PLAYER, -9999, 9999);
+        timer.setPt("nega end");
+        board[i] = '0';
 
-            timer.setPt("Negamax started");
-            moveScore = -negamax(!AI_PLAYER, -9999, 9999);
-            timer.setPt("Negamax ended");
+        log(Debug, "Nega took " + numToStr(timer.microPassed("nega start", "nega end")) + " us");
 
-            double timePassed = Timer::milliPassed(timer.pt("Negamax started"), timer.pt("Negamax ended"));
-            log(Warn, fltToStr(timePassed)+ "ms for negamax");
-
-            _grid[i][j].setBit(nullptr);
-
-            if(moveScore > bestMoveScore){
+        if(moveScore > bestMoveScore){
                 bestMoveScore = moveScore;
-                bestMove = &(_grid[i][j]);
-            }
-            if(bestMoveScore == 1){
-                log(Info, "Optimal move found at"+numToStr(i*10+j)+"future move search cancelled");
-                goto exit;
-            }
+                bestMove = i;
         }
-    }exit:
+        if(bestMoveScore == 1){
+            log(Info, "Optimal move found at"+numToStr(i)+"future move search cancelled");
+            break;
+        }
+    }
 
-    if(bestMove != nullptr) {
-        actionForEmptyHolder(bestMove);
+    if(bestMove != -1) {
+        actionForEmptyHolder(&_grid[bestMove/3][bestMove%3]);
     }
     endTurn();
 
 }
 
-int TicTacToe::negamax(int player, int a, int b, int d)
-{
-    if(checkForDraw()){
-        return 0;
+int TicTacToe::negamax(std::string &board, int player, int a, int b, int d)
+{   
+    int winner = AICheckWin(board);
+    if(winner != -1){
+        return (10-d)*(winner == player? 1 : -1);
     }
-
-    Player *winner = checkForWinner();
-    if(winner){
-        return (winner->playerNumber() == player)? 1: -1;
+    if(AICheckDraw(board)){
+        return 0;
     }
 
     int bestScore = -99999;
     int res;
-    for(int i = 0; i < 3; ++i){
-        for(int j = 0; j < 3; ++j){
-            if(!_grid[i][j].empty()) continue;
+    for(int i = 0; i < 9; ++i){
+        if(board[i] != '0') continue;
 
-            _grid[i][j].setBit(PieceForPlayer(player));
+            board[i] = (player +1+ '0');
 
-            res = -negamax(!player, -b, -a, d+1);
+            res = -negamax(board, !player, -b, -a, d+1);
             bestScore = std::max(bestScore, res);
             a = std::max(a, res);
 
-            _grid[i][j].setBit(nullptr);
+            board[i] = '0';
 
-            if(a >= b) return bestScore;
-
-        }
+           if(a >= b) return bestScore;
     }
 
     return bestScore;
