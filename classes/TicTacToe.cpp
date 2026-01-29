@@ -332,7 +332,7 @@ bool AICheckDraw(const std::string& s){
 
 //
 // this is the function that will be called by the AI
-//
+//s
 void TicTacToe::updateAI() 
 {
 
@@ -350,7 +350,7 @@ void TicTacToe::updateAI()
         timer.setPt("nega end");
         board[i] = '0';
 
-        log(Debug, "Nega took " + numToStr(timer.microPassed("nega start", "nega end")) + " us");
+        log(Debug, "Nega took " + fltToStr(timer.microPassedPrcs("nega start", "nega end")) + " us");
 
         if(moveScore > bestMoveScore){
                 bestMoveScore = moveScore;
@@ -372,12 +372,12 @@ void TicTacToe::updateAI()
 int TicTacToe::negamax(std::string &board, int player, int a, int b, int d)
 {   
     int winner = AICheckWin(board);
-    if(winner != -1){
+    if(winner != -1)
         return (10-d)*(winner == player? 1 : -1);
-    }
-    if(AICheckDraw(board)){
+    
+    if(AICheckDraw(board))
         return 0;
-    }
+    
 
     int bestScore = -99999;
     int res;
